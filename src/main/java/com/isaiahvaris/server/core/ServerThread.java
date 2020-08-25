@@ -21,7 +21,7 @@ public class ServerThread extends Thread {
     @Override
     public void run() {
         try {
-            //Servesocket should keep listening to accept requests while it is open
+            //Serversocket should keep listening to accept requests while it is open
             while (serverSocket.isBound() && !serverSocket.isClosed()) {
                 Socket socket = serverSocket.accept();
 

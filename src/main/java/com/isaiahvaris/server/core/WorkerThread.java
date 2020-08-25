@@ -22,34 +22,21 @@ public class WorkerThread extends Thread {
 
     @Override
     public void run() {
-
         getRequest(socket);
         sendResponse(socket);
         LOGGER.info("Connection Processing Finished.");
         try {
             socket.close();
         } catch (IOException e) {
-            e.printStackTrace();
-        }
+            LOGGER.info("Socket not closed successfully.", e);
 
-//        try {
-//
-//
-//            LOGGER.info("Connection Processing Finished.");
-//        } catch (IOException e) {
-//            LOGGER.error("Problem with communication", e);
-//        } finally {
-//            if (socket != null) {
-//                try {
-//                    socket.close();
-//                } catch (IOException e) {}
-//            }
-//        }
+        }
     }
 
     private static void getRequest(Socket socket) {
 
-        try(BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             StringBuilder clientRequestBuilder = new StringBuilder();
             String line;
             while (!(line = br.readLine()).isBlank()) {
@@ -85,13 +72,12 @@ public class WorkerThread extends Thread {
                     "src/main/resources/SampleJSON.json";
             String contentType = targetPath.equals("/") ? "text/html" : "application/json";
 
-            byte[] content = Files.readAllBytes(Path.of(path));
+            String content = new String(Files.readAllBytes(Path.of(path)));
 
-            String response = "HTTP/1.1 200 OK" + "\r\n" + "Content-Type: " + contentType +
-                    "Content-length: " + content.length + "\r\n" + "\r\n" +
+            String response = "HTTP/1.1 200 OK" + "\r\n" + "content-type: " + contentType + "\r\n" +
+                    "content-length: " + content.length() + "\r\n" + "\r\n" +
                     content +
                     "\r\n" + "\r\n";
-            System.out.println(response);
 
             outputStream.write(response.getBytes());
             outputStream.flush();
