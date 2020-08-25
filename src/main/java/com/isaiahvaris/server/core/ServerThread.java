@@ -39,6 +39,7 @@ public class ServerThread extends Thread {
         } finally {
             if (serverSocket != null) {
                 try {
+                    //Close server socket
                     serverSocket.close();
                 } catch (IOException e) {}
             }
