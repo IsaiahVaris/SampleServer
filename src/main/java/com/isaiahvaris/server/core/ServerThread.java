@@ -10,6 +10,7 @@ import java.net.Socket;
 public class ServerThread extends Thread {
     public static final Logger LOGGER = LoggerFactory.getLogger(ServerThread.class);
 
+    //Server socket for accepting requests
     private ServerSocket serverSocket;
 
     public ServerThread() throws IOException {
@@ -17,17 +18,18 @@ public class ServerThread extends Thread {
 
     }
 
-//    public ServerSocket getServerSocket() {
-//        return serverSocket;
-//    }
-
     @Override
     public void run() {
         try {
+            //Servesocket should keep listening to accept requests while it is open
             while (serverSocket.isBound() && !serverSocket.isClosed()) {
                 Socket socket = serverSocket.accept();
 
+
                 LOGGER.info(" Connection accepted:" + socket.getInetAddress());
+                /*
+                One a request is accepted create a new worker thread and start it. The worker thread class handles the process from there
+                 */
                 WorkerThread workerThread = new WorkerThread(socket);
                 workerThread.start();
             }
