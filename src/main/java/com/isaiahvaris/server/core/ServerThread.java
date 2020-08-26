@@ -22,7 +22,6 @@ public class ServerThread extends Thread {
         this.serverSocket = new ServerSocket(8080);
     }
 
-
     public ServerSocket getServerSocket() {
         return serverSocket;
     }
