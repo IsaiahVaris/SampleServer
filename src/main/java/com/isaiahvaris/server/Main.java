@@ -1,6 +1,7 @@
 package com.isaiahvaris.server;
 
 import com.isaiahvaris.server.core.ServerThread;
+import com.isaiahvaris.server.core.WorkerThread;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

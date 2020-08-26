@@ -29,22 +29,25 @@ public class WorkerThread extends Thread {
         LOGGER.info("Connection Processing Finished.");
         try {
             //Socket should be closed after a successful operation
-            socket.close();
+            if (socket != null) {
+                socket.close();
+            }
+
         } catch (IOException e) {
             LOGGER.info("Socket not closed successfully.", e);
-
         }
     }
 
-    private static void getRequest(Socket socket) {
-
+    public String getRequest(Socket socket) {
+        String requestSummary = "";
         try {
             //request is read through a buffered reader that takes the inputstream from the socket as input
             BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             //request is written to a stringbuilder which will be used to get the part(s) of the request we need for the response
             StringBuilder clientRequestBuilder = new StringBuilder();
             String line;
-            while (!(line = br.readLine()).isBlank()) {
+
+            while (!(line = br.readLine()).isBlank() ) {
                 clientRequestBuilder.append(line + "\r\n");
             }
 
@@ -71,39 +74,68 @@ public class WorkerThread extends Thread {
                 headers.add(header);
             }
 
-            String requestLog = String.format("Client %s, method %s, targetPath %s, version %s, host %s, headers %s",
-                    socket.toString(), method, targetPath, version, host, headers.toString());
+            String requestLog = String.format("Client: %s, method: %s, targetPath: %s, version: %s, host: %s,\nheaders:\n%s",
+                    socket.toString(), method, targetPath, version, host, String.join("\n", headers));
             System.out.println(requestLog);
 
+            requestSummary = String.format("method: %s, targetPath: %s, version: %s, host: %s", method, targetPath, version, host);
         }  catch (IOException e) {//Catch any IO exception when reading the browser request
             LOGGER.error("Problem with request", e);
         }
+        return requestSummary;
     }
 
-    private static void sendResponse(Socket socket) {
 
-        //outputstream to send server response
+
+    public String sendResponse(Socket socket) {
+        String path = "";
+        String responseSummary = "";
+        String status = "";
+        /*
+        outputstream to send server response. Try-with-resources to automatically close socket
+         */
         try(OutputStream outputStream = socket.getOutputStream()) {
-            //We read response from html or json object depending on path gotten from request
-            String path = targetPath.equals("/") ? "src/main/resources/SampleHtml.html" :
-                    "src/main/resources/SampleJSON.json";
+            /*
+            We read response from html or json object depending on path gotten from request
+            html is to be used unless request specifies json.
+            Send a 404 response is the target path requested doesn't exist
+             */
+            switch (targetPath) {
+                case "/":
+                    path = "src/main/resources/SampleHtml.html";
+                    status = "200 OK";
+                    break;
+                case "/json":
+                    path = "src/main/resources/SampleJSON.json";
+                    status = "200 OK";
+                    break;
+                default:
+                    path = "src/main/resources/Sample404.html";
+                    status = "404 Not Found";
+            }
 
-            String contentType = targetPath.equals("/") ? "text/html" : "application/json";
+            //content type tp allow the browser recognize what object we're sending
+            String contentType = targetPath.equals("/json") ? "application/json" : "text/html";
 
             //read content of file as bytes
             String content = new String(Files.readAllBytes(Path.of(path)));
 
             //response tailored according to protocol to enable the browser recognise the type of content being sent
-            String response = "HTTP/1.1 200 OK" + "\r\n" + "content-type: " + contentType + "\r\n" +
-                    "content-length: " + content.length() + "\r\n" + "\r\n" +
+            String response = "HTTP/1.1 " + status + "\r\n" + "Content-Type: " + contentType + "\r\n" +
+                    "Content-length: " + content.length() + "\r\n" + "\r\n" +
                     content +
                     "\r\n" + "\r\n";
 
             //write the server response
             outputStream.write(response.getBytes());
             outputStream.flush();
+            outputStream.close();
+            responseSummary = status + " " + contentType;
         } catch (IOException e) {//Catch any IO exception when reading from file or writing to our outputstream
             LOGGER.error("Problem with response", e);
         }
+        return responseSummary;
     }
+
+
 }
