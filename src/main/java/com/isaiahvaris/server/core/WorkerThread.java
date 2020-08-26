@@ -68,7 +68,6 @@ public class WorkerThread extends Thread {
 
             //the remaining lines contain headers with various information
             List<String> headers = new ArrayList<>();
-
             for (int h = 2; h < requestsLines.length; h++) {
                 String header = requestsLines[h];
                 headers.add(header);
@@ -85,12 +84,10 @@ public class WorkerThread extends Thread {
         return requestSummary;
     }
 
-
-
     public String sendResponse(Socket socket) {
         String path = "";
-        String responseSummary = "";
         String status = "";
+        String responseSummary = "";
         /*
         outputstream to send server response. Try-with-resources to automatically close socket
          */
@@ -128,6 +125,7 @@ public class WorkerThread extends Thread {
 
             //write the server response
             outputStream.write(response.getBytes());
+            //flush any data still in the stream and close
             outputStream.flush();
             outputStream.close();
             responseSummary = status + " " + contentType;
