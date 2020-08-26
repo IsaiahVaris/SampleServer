@@ -9,6 +9,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 class ServerThreadTest {
+
+    /*
+    testing request and response from server using HttpClient
+     */
     static ServerThread serverThread;
     @BeforeAll
     static void setUp(){
